@@ -1,0 +1,147 @@
+spring:
+  application:
+    name: anorbooks
+
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/anorbooking
+    username: almousleck
+    password: letmein
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 600000
+      connection-timeout: 30000
+
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
+  # Flyway Migration
+#  flyway:
+#    enabled: true
+#    baseline-on-migrate:
+#    locations: classpath:db/migration
+
+  # Redis Configuration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000
+
+  # Email Configuration
+  mail:
+    host: localhost
+    port: 1025
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+  # Jackson Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+
+  # MVC Configuration
+  #throw-exception-if-no-handler-found: true
+  mvc:
+    log-resolved-exception: true
+  web:
+    resources:
+      add-mappings: false
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    session:
+      cookie:
+        http-only: true
+        secure: true
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 20
+    max-connections: 10000
+    connection-timeout: 5000
+
+# Security Configuration
+security:
+  jwt:
+    secret: ${JWT_SECRET:verySecretKeyThatShouldBeChangedInProduction}
+    expiration: 86400000 # 24 hours in milliseconds
+    refresh-expiration: 604800000 # 7 days in milliseconds
+  allowed-origins:
+    - http://localhost:3000
+  max-login-attempts: 5
+  account-lock-duration-minutes: 15
+  password-policy:
+    min-length: 8
+    require-uppercase: true
+    require-lowercase: true
+    require-digit: true
+    require-special-char: true
+    max-history-count: 5
+
+# Payment Configuration
+payment:
+  default-currency: USD
+  stripe:
+    public-key: ${STRIPE_PUBLIC_KEY:pk_test_sample}
+    secret-key: ${STRIPE_SECRET_KEY:sk_test_sample}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_sample}
+    enabled: true
+  paypal:
+    client-id: ${PAYPAL_CLIENT_ID:sample_client_id}
+    client-secret: ${PAYPAL_CLIENT_SECRET:sample_client_secret}
+    sandbox-mode: true
+    enabled: true
+
+# Application specific configuration
+app:
+  email:
+    from: noreply@ticketbooking.com
+  frontend:
+    url: http://localhost:3000
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.ticketbooking: DEBUG
+    org.springframework.web: INFO
+    org.hibernate: INFO
+    org.springframework.security: INFO
+  file:
+    name: logs/application.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized

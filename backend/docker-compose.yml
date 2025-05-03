@@ -1,0 +1,74 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres
+    container_name: anor-booking-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=anorbooking
+      - POSTGRES_USER=almousleck
+      - POSTGRES_PASSWORD=letmein
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - anor-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Get Redis for Caching and Session Management
+  redis:
+    image: redis:7-alpine
+    container_name: anor-booking-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - anor-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MailHog for Email Testing
+  mailhog:
+    image: mailhog/mailhog
+    container_name: anor-booking-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - anor-network
+
+  # PgAdmin
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: anor-booking-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - anor-network
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+volumes:
+  postgres-data:
+  redis-data:
+  pgadmin-data:
+  # Removed maven-repo volume
+  # maven-repo:
+
+networks:
+  anor-network:
+    driver: bridge
