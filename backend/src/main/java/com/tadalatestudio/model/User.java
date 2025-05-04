@@ -73,11 +73,18 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
-    // helper method to manage roles
-    public boolean hasRole(String name) {
-        return roles.stream().anyMatch(
-                role -> role.getName().equals(name)
-        );
+//    @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL)
+//    private Set<Event> organizedEvents = new HashSet<>();
+//
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+//    private Set<Order> orders = new HashSet<>();
+//
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+//    private Set<Ticket> tickets = new HashSet<>();
+
+    // Helper methods for role management
+    public boolean hasRole(String roleName) {
+        return roles.stream().anyMatch(role -> role.getName().equals(roleName));
     }
 
     public void addRole(Role role) {

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 20px;
+            border: 1px solid #ddd;
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            text-align: center;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>Welcome to Event Ticket Booking!</h2>
+    </div>
+
+    <p>Hello <span th:text="${name}">User</span>,</p>
+
+    <p>Thank you for registering with Event Ticket Booking. Your account has been successfully created.</p>
+
+    <p>With your new account, you can:</p>
+    <ul>
+        <li>Browse and discover exciting events</li>
+        <li>Purchase tickets securely</li>
+        <li>Manage your bookings</li>
+        <li>Receive updates about events you're interested in</li>
+    </ul>
+
+    <div style="text-align: center;">
+        <a class="button" th:href="${loginUrl}">Login to Your Account</a>
+    </div>
+
+    <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+
+    <p>Thank you,<br>
+        The Event Ticket Booking Team</p>
+
+    <div class="footer">
+        <p>This is an automated message, please do not reply to this email.</p>
+        <p>&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2023</span> Event Ticket Booking System. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

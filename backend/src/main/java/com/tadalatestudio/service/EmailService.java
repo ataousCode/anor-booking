@@ -4,7 +4,6 @@ import com.tadalatestudio.model.User;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -14,14 +13,11 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 @Service
-@AllArgsConstructor
 @Slf4j
 public class EmailService {
     private final JavaMailSender mailSender;
@@ -30,8 +26,17 @@ public class EmailService {
     @Value("${app.email.from:noreply@ticketbooking.com}")
     private String fromEmail;
 
-    @Value("${app.frontend.url:http://localhost:3000}")
+    @Value("${app.frontend.url}")
     private String frontendUrl;
+
+    public EmailService(JavaMailSender mailSender, SpringTemplateEngine templateEngine,
+                        @Value("${app.frontend.url:http://localhost:3000}") String frontendUrl,
+                        @Value("${app.email.from:noreply@ticketbooking.com}") String fromEmail) {
+        this.mailSender = mailSender;
+        this.templateEngine = templateEngine;
+        this.frontendUrl = frontendUrl;
+        this.fromEmail = fromEmail;
+    }
 
     @Async
     public void sendPasswordResetEmail(User user, String otp, int expiryMinutes) {

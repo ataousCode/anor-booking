@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 20px;
+            border: 1px solid #ddd;
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .ticket-info {
+            background-color: #eee;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .ticket-detail {
+            margin: 10px 0;
+        }
+        .barcode {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .barcode img {
+            max-width: 100%;
+            height: auto;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            text-align: center;
+            color: #777;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>Your Ticket Confirmation</h2>
+    </div>
+
+    <p>Hello <span th:text="${name}">User</span>,</p>
+
+    <p>Thank you for your purchase! Your ticket(s) for <strong th:text="${eventName}">Event Name</strong> have been confirmed.</p>
+
+    <div class="ticket-info">
+        <div class="ticket-detail"><strong>Event:</strong> <span th:text="${eventName}">Event Name</span></div>
+        <div class="ticket-detail"><strong>Date:</strong> <span th:text="${eventDate}">January 1, 2023</span></div>
+        <div class="ticket-detail"><strong>Time:</strong> <span th:text="${eventTime}">7:00 PM</span></div>
+        <div class="ticket-detail"><strong>Location:</strong> <span th:text="${eventLocation}">Event Venue</span></div>
+        <div class="ticket-detail"><strong>Ticket Type:</strong> <span th:text="${ticketType}">VIP</span></div>
+        <div class="ticket-detail"><strong>Quantity:</strong> <span th:text="${quantity}">2</span></div>
+        <div class="ticket-detail"><strong>Order ID:</strong> <span th:text="${orderId}">ORD123456</span></div>
+    </div>
+
+    <div class="barcode">
+        <p>Your ticket barcode:</p>
+        <img th:src="${barcodeUrl}" alt="Ticket Barcode" />
+    </div>
+
+    <p>You can view your tickets in your account or download them using the button below:</p>
+
+    <div style="text-align: center;">
+        <a class="button" th:href="${ticketUrl}">View My Tickets</a>
+    </div>
+
+    <p>We look forward to seeing you at the event!</p>
+
+    <p>Thank you,<br>
+        The Event Ticket Booking Team</p>
+
+    <div class="footer">
+        <p>This is an automated message, please do not reply to this email.</p>
+        <p>&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2023</span> Event Ticket Booking System. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

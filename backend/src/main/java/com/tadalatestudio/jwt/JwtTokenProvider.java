@@ -30,8 +30,22 @@ public class JwtTokenProvider {
 
     @PostConstruct
     public void init() {
-        this.key = Keys.hmacShaKeyFor(securityProperties.getJwt().getSecret()
-                .getBytes());
+        if (securityProperties.getJwt().getSecret() != null && !securityProperties.getJwt().getSecret().isEmpty()) {
+            // For backward compatibility, use the configured secret if it's strong enough
+            byte[] keyBytes = securityProperties.getJwt().getSecret().getBytes();
+            if (keyBytes.length * 8 >= 512) {
+                this.key = Keys.hmacShaKeyFor(keyBytes);
+                log.info("Using configured JWT secret key");
+            } else {
+                // Generate a secure key for HS512 as recommended in the error message
+                this.key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+                log.warn("Configured JWT secret key is too weak for HS512. Generated a secure key instead.");
+            }
+        } else {
+            // Generate a secure key for HS512
+            this.key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+            log.info("Generated secure JWT key for HS512");
+        }
     }
 
     public String generateToken(Authentication authentication) {
@@ -126,8 +140,5 @@ public class JwtTokenProvider {
 
         return claims.getExpiration().getTime();
     }
-
-
-
 
 }

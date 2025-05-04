@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,8 +43,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         // Public endpoints
-                        .requestMatchers("/auth/**", "/events/public/**", "/v3/api-docs/**",
-                                "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/auth/**", "/events/public/**",
+                                "/v3/api-docs/**", "/swagger-ui/**",
+                                "/swagger-ui.html").permitAll()
                         // Admin endpoints
                         .requestMatchers("/admin/**").hasAuthority(Role.ROLE_ADMIN)
                         // Organizer endpoints
@@ -52,15 +54,21 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-                .headers(headers -> headers
-                        .xssProtection(xss -> xss.disable())
-                        .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'"))
-                        .frameOptions(frame -> frame.deny())
-                        .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
-                );
+                .headers(headers -> {
+                    // Modern Spring Security 6.1+ headers configuration
+                    headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::deny);
+                    //frameOptions -> frameOptions.deny()
+                    // Set Content-Security-Policy header
+                    headers.contentSecurityPolicy(contentSecurityPolicy ->
+                            contentSecurityPolicy.policyDirectives("default-src 'self'"));
+                    // Set Strict-Transport-Security header
+                    headers.httpStrictTransportSecurity(hsts ->
+                            hsts.maxAgeInSeconds(31536000).includeSubDomains(true));
+                });
 
         return http.build();
     }
+
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
@@ -72,10 +80,10 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12); // Higher strength
-    }
+//    @Bean
+//    public PasswordEncoder passwordEncoder() {
+//        return new BCryptPasswordEncoder(12); // Higher strength
+//    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

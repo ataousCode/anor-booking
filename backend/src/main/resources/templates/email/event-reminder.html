@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Reminder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 20px;
+            border: 1px solid #ddd;
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .event-info {
+            background-color: #eee;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .event-detail {
+            margin: 10px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            text-align: center;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>Event Reminder</h2>
+    </div>
+
+    <p>Hello <span th:text="${name}">User</span>,</p>
+
+    <p>This is a friendly reminder that your upcoming event<strong th:text="${eventName}"> Name</strong> is just <strong th:text="${daysRemaining}">1</strong> day(s) away!</p>
+
+    <div class="event-info">
+        <div class="event-detail"><strong>Event:</strong> <span th:text="${eventName}">Event Name</span></div>
+        <div class="event-detail"><strong>Date:</strong> <span th:text="${eventDate}">January 1, 2023</span></div>
+        <div class="event-detail"><strong>Time:</strong> <span th:text="${eventTime}">7:00 PM</span></div>
+        <div class="event-detail"><strong>Location:</strong> <span th:text="${eventLocation}">Event Venue</span></div>
+    </div>
+
+    <p>Don't forget to bring your tickets! You can access them from your account or the email we sent you after purchase.</p>
+
+    <div style="text-align: center;">
+        <a class="button" th:href="${ticketUrl}">View My Tickets</a>
+    </div>
+
+    <p>We look forward to seeing you at the event!</p>
+
+    <p>Thank you,<br>
+        The Event Ticket Booking Team</p>
+
+    <div class="footer">
+        <p>This is an automated message, please do not reply to this email.</p>
+        <p>If you no longer wish to receive event reminders, you can update your notification preferences in your account settings.</p>
+        <p>&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2023</span> Event Ticket Booking System. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>
