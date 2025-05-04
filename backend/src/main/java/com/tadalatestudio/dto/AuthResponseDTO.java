@@ -31,10 +31,8 @@ public class AuthResponseDTO {
         List<Role> roleList = new ArrayList<>();
         if (roleNames != null) {
             for (String roleName : roleNames) {
-                // Assuming you have a Role enum or class.  Adjust as needed.
-                // This is a placeholder, replace with your actual Role conversion logic.
                 Role role = new Role();
-                role.setName(roleName); //added setter
+                role.setName(roleName);
                 roleList.add(role);
             }
         }

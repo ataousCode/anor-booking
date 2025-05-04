@@ -16,7 +16,7 @@ import com.tadalatestudio.repository.RefreshTokenRepository;
 import com.tadalatestudio.repository.RoleRepository;
 import com.tadalatestudio.repository.UserRepository;
 import com.tadalatestudio.security.AuditLogger;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,9 +29,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,13 +48,6 @@ public class AuthenticationService {
     private final AuditLogger auditLogger;
     private final SecurityProperties securityProperties;
 
-    /**
-     * Register a new user
-     *
-     * @param registerRequest the registration request
-     * @return authentication response with JWT token
-     * @throws BadRequestException if email is already taken or password is invalid
-     */
     @Transactional
     public AuthResponseDTO register(RegisterRequestDTO registerRequest) {
         // Validate email uniqueness
@@ -116,14 +108,6 @@ public class AuthenticationService {
         );
     }
 
-    /**
-     * Authenticate a user
-     *
-     * @param loginRequest the login request
-     * @return authentication response with JWT token
-     * @throws BadCredentialsException if credentials are invalid
-     * @throws LockedException if account is locked
-     */
     @Transactional
     public AuthResponseDTO login(LoginRequestDTO loginRequest) {
         try {
@@ -152,50 +136,56 @@ public class AuthenticationService {
 
             auditLogger.logSuccessfulAuthentication(user.getEmail());
 
+            // Extract role names safely from the user object
+            Set<String> roleNames = new HashSet<>();
+            if (user.getRoles() != null) {
+                // Create a defensive copy to avoid ConcurrentModificationException
+                new HashSet<>(user.getRoles()).forEach(role -> roleNames.add(role.getName()));
+            }
+
             return new AuthResponseDTO(
                     accessToken,
                     refreshToken,
                     user.getId(),
                     user.getEmail(),
-                    getUserRoleNames(user)
+                    roleNames
             );
         } catch (BadCredentialsException e) {
-            // Increment failed login attempts
-            User user = userRepository.findByEmail(loginRequest.getEmail()).orElse(null);
-            if (user != null) {
-                if (user.isAccountNonLocked()) {
-                    if (user.getFailedAttempt() < securityProperties.getMaxLoginAttempts() - 1) {
-                        user.setFailedAttempt(user.getFailedAttempt() + 1);
-                        userRepository.save(user);
-                    } else {
-                        // Lock the account
-                        user.setFailedAttempt(user.getFailedAttempt() + 1);
-                        user.setAccountNonLocked(false);
-                        user.setLockTime(LocalDateTime.now());
-                        userRepository.save(user);
+            // Handle failed login attempt safely
+            try {
+                Optional<User> userOpt = userRepository.findByEmail(loginRequest.getEmail());
+                if (userOpt.isPresent()) {
+                    User user = userOpt.get();
 
-                        auditLogger.logAccountLockout(user.getEmail(), "Maximum failed login attempts exceeded");
-                        throw new LockedException("Your account has been locked due to " + securityProperties.getMaxLoginAttempts()
-                                + " failed login attempts. It will be unlocked after " + securityProperties.getAccountLockDurationMinutes() + " minutes.");
-                    }
-                } else {
-                    // Check if lock time has expired
-                    if (user.getLockTime() != null &&
-                            user.getLockTime().plusMinutes(securityProperties.getAccountLockDurationMinutes()).isBefore(LocalDateTime.now())) {
-                        // Unlock the account
-                        user.setAccountNonLocked(true);
-                        user.setFailedAttempt(0);
-                        user.setLockTime(null);
-                        userRepository.save(user);
-                    } else {
-                        throw new LockedException("Your account is locked. Please try again later.");
+                    if (user.isAccountNonLocked()) {
+                        if (user.getFailedAttempt() < securityProperties.getMaxLoginAttempts() - 1) {
+                            user.setFailedAttempt(user.getFailedAttempt() + 1);
+                            userRepository.save(user);
+                        } else {
+                            user.setFailedAttempt(user.getFailedAttempt() + 1);
+                            user.setAccountNonLocked(false);
+                            user.setLockTime(LocalDateTime.now());
+                            userRepository.save(user);
+
+                            auditLogger.logAccountLockout(user.getEmail(), "Maximum failed login attempts exceeded");
+                            throw new LockedException("Your account has been locked due to " +
+                                    securityProperties.getMaxLoginAttempts() +
+                                    " failed login attempts. It will be unlocked after " +
+                                    securityProperties.getAccountLockDurationMinutes() + " minutes.");
+                        }
                     }
                 }
+            } catch (Exception ex) {
+                // If any exception occurs while handling the bad credentials, log it but don't interrupt the flow
+                // This prevents a secondary exception from masking the original BadCredentialsException
+                log.error("Error handling failed login attempt: {}", ex.getMessage());
             }
+
             auditLogger.logFailedAuthentication(loginRequest.getEmail(), "Invalid credentials");
             throw e;
         }
     }
+
 
     /**
      * Refresh an access token using a refresh token
