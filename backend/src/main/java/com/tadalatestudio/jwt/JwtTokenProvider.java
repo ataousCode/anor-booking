@@ -49,18 +49,30 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(Authentication authentication) {
-        User userDetails = (User) authentication.getPrincipal();
+        String username;
+        Collection<? extends GrantedAuthority> authorities;
+
+        // Handle both String and User principals
+        if (authentication.getPrincipal() instanceof User) {
+            User userDetails = (User) authentication.getPrincipal();
+            username = userDetails.getUsername();
+            authorities = userDetails.getAuthorities();
+        } else {
+            // When the principal is a String (e.g., during token refresh)
+            username = authentication.getPrincipal().toString();
+            authorities = authentication.getAuthorities();
+        }
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + securityProperties.getJwt().getExpirationMs());
 
-        String authorities = userDetails.getAuthorities().stream()
+        String authoritiesString = authorities.stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .claim("roles", authorities)
+                .setSubject(username)
+                .claim("roles", authoritiesString)
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
                 .signWith(key, SignatureAlgorithm.HS512)
