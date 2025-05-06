@@ -9,6 +9,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,18 +24,49 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String barcode;
+    @Column(name = "ticket_number", nullable = false, unique = true)
+    private String ticketNumber;
 
-    @Column(name = "checked_in")
-    private Boolean checkedIn;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "event_id", nullable = false)
+    private Event event;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ticket_type_id", nullable = false)
+    private TicketType ticketType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
+
+    @Column(name = "barcode_url")
+    private String barcodeUrl;
+
+    @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TicketStatus status;
+    private TicketStatus status = TicketStatus.ACTIVE;
+
+    @Column(name = "is_checked_in")
+    private boolean isCheckedIn = false;
 
     @Column(name = "checked_in_at")
     private LocalDateTime checkedInAt;
+
+    @Column(name = "is_cancelled")
+    private boolean isCancelled = false;
+
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
+
+    @Column(name = "cancellation_reason")
+    private String cancellationReason;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -44,19 +76,7 @@ public class Ticket {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ticket_type_id", nullable = false)
-    private TicketType ticketType;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
-
     public enum TicketStatus {
-        RESERVED, PURCHASED, CANCELLED, REFUNDED, USED
+        ACTIVE, USED, CANCELLED, EXPIRED, TRANSFERRED
     }
 }

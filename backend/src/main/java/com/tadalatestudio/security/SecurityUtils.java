@@ -1,6 +1,9 @@
 package com.tadalatestudio.security;
 
 import com.tadalatestudio.exception.UnauthorizedException;
+import com.tadalatestudio.model.User;
+import com.tadalatestudio.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,48 +12,40 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class SecurityUtils {
+    private final UserRepository userRepository;
 
-    /**
-     * Get the current authenticated user's username (email)
-     *
-     * @return the username of the authenticated user
-     * @throws UnauthorizedException if no user is authenticated
-     */
-    public static String getCurrentUserEmail() {
-        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-                .map(authentication -> {
-                    if (authentication.getPrincipal() instanceof UserDetails) {
-                        return ((UserDetails) authentication.getPrincipal()).getUsername();
-                    }
-                    return authentication.getPrincipal().toString();
-                })
-                .orElseThrow(() -> new UnauthorizedException("No authenticated user found"));
-    }
-
-    /**
-     * Check if the current user has the specified authority
-     *
-     * @param authority the authority to check
-     * @return true if the user has the authority, false otherwise
-     */
-    public static boolean hasAuthority(String authority) {
+    public String getCurrentUsername() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return false;
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new UnauthorizedException("User not authenticated");
         }
 
-        return authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(authority));
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof UserDetails) {
+            return ((UserDetails) principal).getUsername();
+        }
+
+        return principal.toString();
     }
 
-    /**
-     * Check if the current user is authenticated
-     *
-     * @return true if the user is authenticated, false otherwise
-     */
-    public static boolean isAuthenticated() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null && authentication.isAuthenticated();
+    public User getCurrentUser() {
+        String username = getCurrentUsername();
+        return userRepository.findByEmail(username).orElseThrow(() -> new UnauthorizedException("User not found: " + username));
+    }
+
+    public Long getCurrentUserId() {
+        return getCurrentUser().getId();
+    }
+
+    public boolean isAdmin() {
+        return getCurrentUser().isAdmin();
+    }
+
+    public boolean isOrganizer() {
+        return getCurrentUser().isOrganizer();
     }
 }

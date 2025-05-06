@@ -9,53 +9,51 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "ticket_types")
+@Table(name = "payment_providers")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class TicketType {
+public class PaymentProvider {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(nullable = false)
+    @Column(length = 500)
     private String description;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
 
-    @Column(name = "quantity_available", nullable = false)
-    private Integer quantityAvailable;
+    @Column(name = "api_key")
+    private String apiKey;
 
-    @Column(name = "quantity_sold", nullable = false)
-    private Integer quantitySold = 0;
+    @Column(name = "api_secret")
+    private String apiSecret;
 
-    @Column(name = "max_per_order")
-    private Integer maxPerOrder;
+    @Column(name = "webhook_url")
+    private String webhookUrl;
 
-    @Column(name = "sale_start_date")
-    private LocalDateTime saleStartDate;
+    @Column(name = "webhook_secret")
+    private String webhookSecret;
 
-    @Column(name = "sale_end_date")
-    private LocalDateTime saleEndDate;
+    @Column(name = "config_json", columnDefinition = "TEXT")
+    private String configJson;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
-    private Event event;
+    @OneToMany(mappedBy = "paymentProvider", cascade = CascadeType.ALL)
+    private Set<PaymentMethod> paymentMethods = new HashSet<>();
 
-    @OneToMany(mappedBy = "ticketType", cascade = CascadeType.ALL)
-    private Set<Ticket> tickets = new HashSet<>();
+    @OneToMany(mappedBy = "paymentProvider")
+    private Set<Transaction> transactions = new HashSet<>();
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -64,5 +62,5 @@ public class TicketType {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
 }
+
