@@ -41,7 +41,7 @@ public class UserDTO {
     private boolean credentialsNonExpired;
     private boolean enabled;
     private boolean mfaEnabled;
-    private Set<String> roles;
+    private Set<Role> roles;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
